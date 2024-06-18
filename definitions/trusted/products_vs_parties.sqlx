@@ -1,0 +1,41 @@
+config {
+    type: "incremental",
+    database: "andresousa-bv",
+    schema: "trusted",
+    name: "products_vs_parties",
+    tags: ["trusted", "eligibility"],
+    assertions: {
+        nonNull: ["party_id", "product_id", "product_name"],
+        uniqueKey: ["party_id", "product_id"]
+    }
+}
+
+SELECT
+  pa.party_id,
+  p.product_id,
+  p.product_name,
+  -- Generate random loan amounts and credit scores within reasonable ranges
+  CAST(RAND() * 50000 + 10000 AS NUMERIC) AS loan_amount,
+  CAST(RAND() * 300 + 450 AS INT64) AS credit_score,
+  -- Generate random event dates within a specified range (e.g., last year)
+  DATE_ADD(CURRENT_DATE(), INTERVAL CAST(RAND() * -365 AS INT64) DAY) AS event_date,
+  -- Choose the most recent created_time from other tables or use the current date
+  COALESCE(pa.created_time, p.created_time, CURRENT_DATE()) AS created_time
+FROM
+  `andresousa-bv.raw.parties` AS pa
+CROSS JOIN
+  -- Cartesian product to create all possible combinations
+  `andresousa-bv.raw.products` AS p
+
+pre_operations {
+  CREATE TABLE IF NOT EXISTS
+    ${self()} ( party_id STRING,
+      product_id STRING,
+      product_name STRING,
+      loan_amount NUMERIC,
+      credit_score INT64,
+      event_date DATE,
+      created_time DATE ) 
+  PARTITION BY
+    created_time;
+}

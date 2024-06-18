@@ -1,5 +1,5 @@
 defaultProject: andresousa-bv
-defaultLocation: southamerica-east1
+defaultLocation: US
 defaultDataset: dataform
 defaultAssertionDataset: dataform_assertions
 dataformCoreVersion: 3.0.0-beta.4
