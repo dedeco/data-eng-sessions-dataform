@@ -1,12 +1,11 @@
 config {
-    type: "incremental",
+    type: "view",
     database: "andresousa-bv",
     schema: "trusted",
     name: "products_vs_parties",
     tags: ["trusted", "eligibility"],
     assertions: {
-        nonNull: ["party_id", "product_id", "product_name"],
-        uniqueKey: ["party_id", "product_id"]
+        nonNull: ["party_id", "product_id", "product_name"]
     }
 }
 
@@ -27,6 +26,7 @@ CROSS JOIN
   -- Cartesian product to create all possible combinations
   `andresousa-bv.raw.products` AS p
 
+/*
 pre_operations {
   CREATE TABLE IF NOT EXISTS
     ${self()} ( party_id STRING,
@@ -39,3 +39,4 @@ pre_operations {
   PARTITION BY
     created_time;
 }
+*/

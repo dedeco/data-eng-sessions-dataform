@@ -1,0 +1,43 @@
+config {
+    type: "table",
+    database: "andresousa-bv",
+    schema: "trusted",
+    name: "parties_eligibility",
+    tags: ["trusted", "eligibility", "calculated"],
+    assertions: {
+        nonNull: ["party_id", "product_id", "product_name"]
+    }
+}
+
+SELECT
+  pvp.party_id,
+  pa.hashed_name,
+  pa.other_customer_data,
+  trusted.is_eligible_age(pa.age) AS eligible_age,
+IF
+  (pvp.product_name = 'Car Loan', trusted.has_recent_car_loan(pvp.product_name,
+      pvp.event_date), FALSE) AS eligible_has_loan_car
+FROM
+  `andresousa-bv.trusted.products_vs_parties` AS pvp
+JOIN
+  `andresousa-bv.raw.parties` AS pa
+ON
+  pvp.party_id = pa.party_id
+GROUP BY
+  pvp.party_id,
+  pa.hashed_name,
+  pa.other_customer_data,
+  eligible_age,
+  eligible_has_loan_car
+
+pre_operations {
+  CREATE TABLE IF NOT EXISTS
+    ${self()} ( party_id STRING,
+      hashed_name STRING,
+      other_customer_data STRING,
+      eligible_age BOOL,
+      eligible_has_loan_car BOOL,
+      load_date DATE )
+  PARTITION BY
+    load_date;
+}

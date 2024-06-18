@@ -5,13 +5,13 @@ config {
 
   -- Function to check age eligibility
 CREATE OR REPLACE FUNCTION
-  `raw.is_eligible_age`(age INT64)
+  `trusted.is_eligible_age`(age INT64)
   RETURNS BOOL AS ( age >= 18 );
 
 
   -- Function to check recent car loan (90 days)
 CREATE OR REPLACE FUNCTION
-  `raw.has_recent_car_loan`(product_name STRING,
+  `trusted.has_recent_car_loan`(product_name STRING,
     event_date DATE)
   RETURNS BOOL AS ( product_name = 'Car Loan'
     AND event_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY) );
