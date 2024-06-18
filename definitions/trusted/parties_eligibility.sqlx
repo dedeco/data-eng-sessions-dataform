@@ -1,0 +1,57 @@
+config {
+    type: "table",
+    database: "andresousa-bv",
+    schema: "trusted",
+    name: "parties_eligibility",
+    tags: ["trusted", "eligibility", "calculated"],
+    assertions: {
+        nonNull: ["party_id"]
+    },
+     bigquery: {
+    partitionBy: "DATE(load_date)"
+  },
+}
+
+pre_operations {
+  CREATE TABLE IF NOT EXISTS
+    ${self()} ( party_id STRING,
+      hashed_name STRING,
+      other_customer_data STRING,
+      eligible_age BOOL,
+      eligible_has_loan_car BOOL,
+      load_date TIMESTAMP )
+   PARTITION BY DATE(load_date)
+}
+
+WITH CarLoanInfo AS (
+  SELECT
+    party_id,
+    has_recent_car_loan
+  FROM
+  ${ref("eligibility_has_recent_car_loan")}  
+),
+
+AllPartyInfo AS (
+  SELECT
+    party_id,
+    hashed_name,
+    other_customer_data,
+    eligible_age
+  FROM
+    ${ref("eligibility_age")}  
+)
+
+SELECT
+  api.party_id,
+  api.hashed_name,
+  api.other_customer_data,
+  api.eligible_age,
+  COALESCE(cli.has_recent_car_loan, FALSE) AS eligible_has_loan_car ,
+  CURRENT_TIMESTAMP() as load_date
+FROM
+  AllPartyInfo AS api
+LEFT JOIN
+  CarLoanInfo AS cli
+ON
+  api.party_id = cli.party_id
+
