@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "andresousa-bv",  
+  schema: "raw",
+  name: "products_vs_parties",
+}
