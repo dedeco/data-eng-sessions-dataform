@@ -1,11 +1,12 @@
 config {
-    type: "view",
+    type: "incremental",
     database: "andresousa-bv",
     schema: "trusted",
-    name: "products_vs_parties",
+    name: "parties_vs_products",
     tags: ["trusted", "eligibility"],
     assertions: {
-        nonNull: ["party_id", "product_id", "product_name"]
+        nonNull: ["party_id", "product_id", "product_name"],
+        uniqueKey: ["party_id", "product_id"]
     }
 }
 
@@ -21,12 +22,12 @@ SELECT
   -- Choose the most recent created_time from other tables or use the current date
   COALESCE(pa.created_time, p.created_time, CURRENT_DATE()) AS created_time
 FROM
-  `andresousa-bv.raw.parties` AS pa
+      ${ref("parties")}   AS pa
 CROSS JOIN
   -- Cartesian product to create all possible combinations
-  `andresousa-bv.raw.products` AS p
+    ${ref("products")}  AS p
 
-/*
+
 pre_operations {
   CREATE TABLE IF NOT EXISTS
     ${self()} ( party_id STRING,
@@ -39,4 +40,3 @@ pre_operations {
   PARTITION BY
     created_time;
 }
-*/

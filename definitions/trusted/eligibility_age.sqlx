@@ -1,0 +1,28 @@
+config {
+    type: "view",
+    database: "andresousa-bv",
+    schema: "trusted",
+    name: "eligibility_age",
+    tags: ["trusted", "eligibility", "views"],
+    assertions: {
+        nonNull: ["party_id"]
+    }
+}
+
+
+SELECT
+  pvp.party_id,
+  pa.hashed_name,
+  pa.other_customer_data,
+  trusted.is_eligible_age(pa.age) AS eligible_age,
+FROM
+   ${ref("parties_vs_products")} AS pvp
+JOIN
+  `andresousa-bv.raw.parties` AS pa
+ON
+  pvp.party_id = pa.party_id
+GROUP BY
+  pvp.party_id,
+  pa.hashed_name,
+  pa.other_customer_data,
+  eligible_age
